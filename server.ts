@@ -39,6 +39,20 @@ async function startServer() {
       appType: "spa",
     });
     app.use(vite.middlewares);
+
+    // Serve index.html through Vite transformation
+    app.get("*", async (req, res, next) => {
+      const url = req.originalUrl;
+      try {
+        const fs = await import("fs");
+        let template = fs.readFileSync(path.resolve(__dirname, "index.html"), "utf-8");
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200).set({ "Content-Type": "text/html" }).end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e as Error);
+        next(e);
+      }
+    });
   } else {
     console.log("Starting in production mode...");
     const distPath = path.join(process.cwd(), "dist");
