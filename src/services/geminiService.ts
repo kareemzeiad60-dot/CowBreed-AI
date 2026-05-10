@@ -1,15 +1,27 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CowBreedAnalysis } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let genAI: GoogleGenAI | null = null;
+
+function getGenAI() {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("مفتاح Gemini API غير متوفر. يرجى إضافته في إعدادات التطبيق.");
+    }
+    genAI = new GoogleGenAI(apiKey as any);
+  }
+  return genAI;
+}
 
 export async function analyzeCowImage(base64Image: string): Promise<CowBreedAnalysis> {
-  const model = "gemini-3-flash-preview";
+  const ai = getGenAI();
+  const modelName = "gemini-1.5-flash"; // Using a stable and common model name
   
   const prompt = `Analyze this image of a cow. 
   Identify its breed and provide expert agricultural advice in ARABIC.
   
-  Return the response in JSON format with the following fields:
+  Return the response in JSON format (MUST be valid JSON) with the following fields:
   - breed: The name of the breed in Arabic.
   - confidence: A estimated confidence score between 0 and 1.
   - description: A detailed description of the breed features.
@@ -17,37 +29,23 @@ export async function analyzeCowImage(base64Image: string): Promise<CowBreedAnal
   - healthCare: Key health considerations and disease prevention.
   - conversionRate: Information about growth/milk conversion rate.`;
 
-  const response = await ai.models.generateContent({
-    model,
-    contents: [
-      {
-        parts: [
-          { text: prompt },
-          { inlineData: { data: base64Image.split(",")[1], mimeType: "image/jpeg" } }
-        ]
-      }
-    ],
-    config: {
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          breed: { type: Type.STRING },
-          confidence: { type: Type.NUMBER },
-          description: { type: Type.STRING },
-          nutrition: { type: Type.STRING },
-          healthCare: { type: Type.STRING },
-          conversionRate: { type: Type.STRING }
-        },
-        required: ["breed", "confidence", "description", "nutrition", "healthCare", "conversionRate"]
-      }
-    }
-  });
-
   try {
-    return JSON.parse(response.text.trim()) as CowBreedAnalysis;
+    const generativeModel = (ai as any).getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        responseMimeType: "application/json",
+      }
+    });
+
+    const result = await generativeModel.generateContent([
+      prompt,
+      { inlineData: { data: base64Image.split(",")[1], mimeType: "image/jpeg" } }
+    ]);
+
+    const responseText = result.response.text();
+    return JSON.parse(responseText.trim()) as CowBreedAnalysis;
   } catch (error) {
-    console.error("Failed to parse Gemini response:", error);
-    throw new Error("حدث خطأ أثناء تحليل البيانات. يرجى المحاولة مرة أخرى.");
+    console.error("Gemini analysis error:", error);
+    throw new Error(error instanceof Error ? error.message : "حدث خطأ أثناء تحليل الصورة. تأكد من جودة الصورة والمحاولة لاحقاً.");
   }
 }
