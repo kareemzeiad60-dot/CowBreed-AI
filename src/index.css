@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Libre Baskerville", serif;
+  --font-sans: "Inter", "IBM+Plex+Sans+Arabic", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #4a5d4e; /* Deep Forest Green from template */
+  --color-brand-secondary: #5a635c; /* Muted Green */
+  --color-brand-accent: #a68a64; /* Bronze/Tan from template */
+  --color-brand-surface: #f5f2ed; /* Creamy Background */
+  --color-brand-beige: #e8e1d6; /* Beige border/accent */
+  
+  --shadow-soft: 0 4px 24px -4px rgba(74, 93, 78, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-[#F5F2ED] text-[#2C332D] font-sans;
+    direction: rtl;
+  }
+}
+
+.dashed-border {
+  border: 2px dashed #A68A64;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.font-serif {
+  @apply font-serif;
+}

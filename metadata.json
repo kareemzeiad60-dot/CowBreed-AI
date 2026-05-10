@@ -1,0 +1,8 @@
+{
+  "name": "CowBreed AI",
+  "description": "منصة ذكية للتعرف على سلالات الأبقار وتقديم نصائح غذائية وصحية متقدمة باستخدام الذكاء الاصطناعي.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
